@@ -1,0 +1,70 @@
+Visualize file data as a png.  Intended for memory or core dumps.
+
+This tool is an experiment, intended to characterize the memory usage of large
+process core dumps.  It does by converting each byte to a colored pixel, and
+building an image from these line by line.  For serious core dump analysis,
+look for other tools that read the metadata and structure from the dump.
+
+By default, the least significant bit is masked, so that the image can't be
+converted back to the input file, to avoid inadvertent privacy leaks.  Use -M
+to avoid masking, or increase BYTE_MASK to mask more bits.
+
+1. Build
+
+Using gcc: gcc -O3 -lm -lpng -o dump2png dump2png.c
+
+Requires libpng.  This is a good candidate for optimization (-O3).
+
+2. Usage
+
+$ ./dump2png --help
+USAGE: dump2png [-HM] [-w width] [-h height_max]
+                [-p palette] [-o outfile.png]
+                [-k skip_factor] [-s seek_bytes]
+                [-z zoom_factor] file
+
+                [--help]	# for full help
+
+palette types: gray, gray16b, gray16l, gray32b, gray32l,
+               hues, hues6, fhues, color, color16, color32, rgb,
+               dvi, x86 (default).
+
+	-H            	don't autoscale height
+	-M            	don't mask least significant bit
+	-k skip_factor	skips horiz lines; eg, 3 means show 1 out of 3
+	-s seek_bytes	the byte offset of the infile to begin reading
+	-z zoom_factor	averages multiple bytes; eg, 16 avgs 16 as 1
+	-z palette	palette type for colorization:
+
+	gray		grayscale, per byte
+	gray16b		grayscale, per short (big-endian)
+	gray16l		grayscale, per short (little-endian)
+	gray32b		grayscale, per long (big-endian)
+	gray32l		grayscale, per long (little-endian)
+	hues		map to 3 hue ranges (rgb), per byte (zoom safe)
+	hues6		map to 6 hue ranges (rgbcmy), per byte
+	fhues		map to 3 full hue ranges (rgb), per byte (zoom safe)
+	color		full colorized scale, per byte
+	color16		full colorized scale, per short (16-bit)
+	color32		full colorized scale, per long (32-bit)
+	rgb		treat 3 sequential bytes as RGB
+	dvi		use RGB to convey differential, value, integral
+	x86		grayscale with some (9) color indicators:
+
+	    green = common english chars: 'e', 't', 'a'
+	    red = common x86 instructions: movl, call, testl
+	    blue = binary values: 0x01, 0x02, 0x03
+
+3. Examples
+
+$ ./dump2png core.node.13562	# by default uses "x86" palette
+$ ./dump2png -w 2048 core	# output image 2048 pixels wide
+$ ./dump2png -o out.png core	# write to "out.png"
+$ ./dump2png -p gray core	# grayscale palette
+$ ./dump2png -p color core	# full color palette
+$ ./dump2png -p hues core	# RGB hues only (zoom friendly)
+$ ./dump2png -z 32 core		# Zoom out by 32x (32 bytes averaged as 1 pixel)
+$ ./dump2png -k 10 core		# Include one horiz line out of 10 (skip 9)
+
+You can always open the images up in an image editor (eg, gimp) and apply more
+effects.
