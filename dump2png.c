@@ -18,8 +18,8 @@
  * SEE ALSO: ImageMagick, which has similar functionality to the "gray" and
  * "rgb" palettes.
  *
- * Copyright 2011 Joyent, Inc.  All rights reserved.
- * Copyright 2011 Brendan Gregg.  All rights reserved.
+ * Copyright 2012 Joyent, Inc.  All rights reserved.
+ * Copyright 2012 Brendan Gregg.  All rights reserved.
  *
  * CDDL HEADER START
  *
